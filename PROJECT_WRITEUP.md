@@ -7,7 +7,7 @@ A runtime AI security monitoring system that detects indirect prompt injection a
 - **Project Type:** AI Agent Security
 - **Category:** GenAI Security / ML Observability
 - **Status:** Production Prototype (`PS-3.2`)
-- **Maintainer:** [Siva](https://github.com/Siva-2517) (`Siva-2517`)
+- **Developer / Maintainer:** Siva ([@Siva-2517](https://github.com/Siva-2517))
 - **Repository:** [https://github.com/Siva-2517/SentinelTrace.git](https://github.com/Siva-2517/SentinelTrace.git)
 
 ---
@@ -18,16 +18,16 @@ A runtime AI security monitoring system that detects indirect prompt injection a
 
 ---
 
-## 💡 2. Why This Problem
+## 💡 2. Why I Tackled This Problem
 
-Modern AI agents do not operate in isolation—they consume external, untrusted data to complete tasks. This creates a critical vulnerability: **Indirect Prompt Injection**.
+When studying agentic AI security, I realized that modern AI agents don't operate on user text alone. They read support tickets, fetch knowledge base articles, query databases, and call external APIs. 
 
-### The Fundamental Vulnerability:
+Traditional guardrails focus almost entirely on checking the **user's input prompt** for bad phrasing or jailbreak keywords. But **Indirect Prompt Injection (IPI)** completely bypasses that defense:
 1. **Modern agents consume external data:** Agents automatically pull context from external third-party sources.
 2. **External sources can contain hidden instructions:** Attackers embed adversarial commands inside external files.
 3. **User prompt filtering cannot detect these attacks:** Because the malicious text never appears inside the user's prompt, traditional input filters pass the request as safe.
 
-### High-Risk Untrusted Attack Surfaces:
+### Untrusted Attack Surfaces:
 * 📧 **Emails:** Unfiltered inbound messages containing hidden system override commands.
 * 📄 **Documents & RAG Files:** Uploaded PDFs or support tickets with embedded injection instructions.
 * 📚 **Knowledge Bases:** Poisoned vector database records.
@@ -146,9 +146,9 @@ For every agent turn, `SentinelTrace` converts raw event telemetry into a normal
 
 ---
 
-## 🧠 7. ML Detection Pipeline
+## 🧠 7. My ML Detection Pipeline
 
-The anomaly engine uses a dual classical machine learning ensemble:
+I designed a dual classical machine learning ensemble:
 
 ### 1. Isolation Forest
 Used for detecting unusual agent behavior patterns in high-dimensional space without assuming feature normality. Normal observations require deeper tree splits, while anomalous bursts are isolated near root nodes:
@@ -159,14 +159,14 @@ Measures statistical distance from the normal baseline distribution $\boldsymbol
 $$D_M(\mathbf{x}) = \sqrt{(\mathbf{x} - \boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu})}$$
 
 ### 3. Session Suspicion Accumulator
-Attackers often split malicious instructions across multiple turns to stay under single-turn detection limits. The suspicion accumulator maintains an exponentially decaying session memory:
+Attackers often split malicious instructions across multiple turns to stay under single-turn detection limits. I added an exponentially decaying session memory:
 $$S(t) = 0.85 \cdot S(t-1) + \text{score}(t)$$
 
 If $S(t) \ge 1.50$, the entire session is flagged even if individual turns score below threshold.
 
 ---
 
-## 🛠️ 8. Implementation Journey
+## 🛠️ 8. How I Built It (Implementation Journey)
 
 1. **Decoupled Architecture:** Created clean `server/` (FastAPI) and `client/` (React + Tailwind + Recharts) modules.
 2. **Instrumentation Layer:** Developed a non-blocking event wrapper around LangGraph tool executions.
@@ -192,9 +192,9 @@ REDIS_URL="rediss://default:[UPSTASH-PASSWORD]@[UPSTASH-ENDPOINT].upstash.io:637
 
 ---
 
-## 🖥️ 10. Dashboard
+## 🖥️ 10. Security Dashboard
 
-The React security dashboard provides real-time security monitoring:
+I built a dark-mode React dashboard featuring:
 - **ScenarioReplay:** Live turn simulator for testing normal prompts or 3 red-team attack presets.
 - **AnomalyTimeline:** Recharts time-series chart showing combined scores, suspicion accumulators, and threshold lines ($0.65$).
 - **FeatureAttribution:** Z-score feature importance breakdown for auditability.
@@ -202,9 +202,9 @@ The React security dashboard provides real-time security monitoring:
 
 ---
 
-## 🧪 11. Evaluation Setup & Results
+## 🧪 11. Evaluation Setup & Measured Results
 
-### Evaluation Battery:
+### Evaluation Setup:
 * **Normal Scenarios:** 25 benign agent workflows.
 * **Attack Scenarios:**
   1. *Data Exfiltration through Email:* Hidden payload triggers unauthorized email dispatch.
@@ -228,10 +228,6 @@ The React security dashboard provides real-time security monitoring:
 * **Monitoring failure does not stop agent execution:** If the scoring service is temporarily unavailable, the agent continues executing user tasks without interruption.
 * **Events continue logging:** Turn events are buffered locally or pushed to Redis queues for background processing.
 * **Detection resumes after recovery:** As soon as the scoring engine recovers, queued turn events are scored asynchronously.
-
-### Security & Privacy:
-* **PII Redaction:** `structlog` automatically scrubs emails, phone numbers, and SSNs before logging.
-* **TLS Encrypted Connections:** Encrypted database and Redis transports (`rediss://`).
 
 ---
 

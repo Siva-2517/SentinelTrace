@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="100%" height="100%">
+  <defs>
+    <!-- Arrowhead markers for different line colors -->
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b5cf6"/>
+    </marker>
+    <marker id="arrow-pink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899"/>
+    </marker>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#06b6d4"/>
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
+    </marker>
+    <marker id="arrow-indigo" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6366f1"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="480" fill="#0f172a" rx="14"/>
+  <rect x="2" y="2" width="956" height="476" fill="none" stroke="#334155" stroke-width="1.5" rx="13"/>
+  
+  <!-- Title -->
+  <text x="480" y="45" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="700" text-anchor="middle">🛡️ SentinelTrace — System Architecture Flow</text>
+
+  <!-- ROW 1 NODES -->
+  <!-- Node 1: User Request -->
+  <rect x="40" y="90" width="150" height="60" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="8"/>
+  <text x="115" y="125" fill="#f1f5f9" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">User Request</text>
+
+  <!-- Node 2: LangGraph Agent -->
+  <rect x="240" y="90" width="150" height="60" fill="#1e293b" stroke="#8b5cf6" stroke-width="2" rx="8"/>
+  <text x="315" y="125" fill="#f1f5f9" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">LangGraph Agent</text>
+
+  <!-- Node 3: Instrumentation Layer -->
+  <rect x="440" y="90" width="180" height="60" fill="#1e293b" stroke="#ec4899" stroke-width="2" rx="8"/>
+  <text x="530" y="125" fill="#f1f5f9" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">Instrumentation Layer</text>
+
+  <!-- Node 4: 12-Dim Vector -->
+  <rect x="670" y="90" width="170" height="60" fill="#1e293b" stroke="#06b6d4" stroke-width="2" rx="8"/>
+  <text x="755" y="125" fill="#f1f5f9" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">12-Dim Feature Vector</text>
+
+  <!-- ROW 1 CONNECTING ARROWS -->
+  <line x1="190" y1="120" x2="232" y2="120" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <line x1="390" y1="120" x2="432" y2="120" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow-purple)"/>
+  <line x1="620" y1="120" x2="662" y2="120" stroke="#ec4899" stroke-width="2" marker-end="url(#arrow-pink)"/>
+
+  <!-- ROW 2 NODES (STORAGE & SESSIONS) -->
+  <!-- Node 5: Supabase Postgres -->
+  <rect x="470" y="215" width="180" height="60" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="560" y="250" fill="#f1f5f9" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">Supabase Postgres</text>
+
+  <!-- Node 6: Upstash Redis -->
+  <rect x="690" y="215" width="160" height="60" fill="#1e293b" stroke="#f59e0b" stroke-width="2" rx="8"/>
+  <text x="770" y="250" fill="#f1f5f9" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">Upstash Redis</text>
+
+  <!-- ARROWS FROM 12-DIM VECTOR TO STORAGE -->
+  <path d="M 755 150 L 755 180 L 560 180 L 560 207" fill="none" stroke="#06b6d4" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <path d="M 755 150 L 755 207" fill="none" stroke="#06b6d4" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+
+  <!-- ROW 3 NODES (ML ENGINE & DASHBOARD) -->
+  <!-- Node 7: ML Detection Engine -->
+  <rect x="380" y="340" width="470" height="65" fill="#1e293b" stroke="#ef4444" stroke-width="2" rx="8"/>
+  <text x="615" y="367" fill="#f1f5f9" font-family="sans-serif" font-size="15" font-weight="700" text-anchor="middle">ML Detection Engine</text>
+  <text x="615" y="390" fill="#94a3b8" font-family="sans-serif" font-size="12" text-anchor="middle">Isolation Forest + Mahalanobis Distance + Suspicion Accumulator</text>
+
+  <!-- Node 8: React Dashboard -->
+  <rect x="40" y="340" width="270" height="65" fill="#1e293b" stroke="#6366f1" stroke-width="2" rx="8"/>
+  <text x="175" y="367" fill="#f1f5f9" font-family="sans-serif" font-size="15" font-weight="700" text-anchor="middle">React Dashboard</text>
+  <text x="175" y="390" fill="#94a3b8" font-family="sans-serif" font-size="12" text-anchor="middle">Recharts Timeline &amp; Attribution</text>
+
+  <!-- ARROWS FROM STORAGE TO ML ENGINE -->
+  <path d="M 560 275 L 560 332" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrow-emerald)"/>
+  <path d="M 770 275 L 770 332" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-amber)"/>
+
+  <!-- ARROW FROM ML ENGINE TO DASHBOARD -->
+  <line x1="380" y1="372" x2="318" y2="372" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red)"/>
+
+  <!-- FEEDBACK ARROW FROM DASHBOARD TO USER REQUEST -->
+  <path d="M 115 340 L 115 158" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-indigo)"/>
+</svg>
