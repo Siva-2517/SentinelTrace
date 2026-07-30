@@ -252,5 +252,7 @@ sentinel-trace/
 
 ---
 
-## 📜 License
-Developed as part of the **Aivar Innovations Agentic AI Security Benchmark Series (`PS-3.2`)**. Released under the MIT License.
+## 📜 License & Owner Information
+
+**Repository Owner / Maintainer:** [Siva](https://github.com/Siva-2517) (`Siva-2517`)  
+**Organization / Project Series:** Aivar Innovations — Agentic AI Security Benchmark Series   
