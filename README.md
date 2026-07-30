@@ -1,5 +1,6 @@
 # 🛡️ SentinelTrace — Behavioral Anomaly Detector for Indirect Prompt Injection
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-SentinelTrace-181717?style=flat&logo=github)](https://github.com/Siva-2517/SentinelTrace.git)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
 [![React 18](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://reactjs.org/)
@@ -8,6 +9,7 @@
 
 **Project Codename:** `SentinelTrace`  
 **Domain:** Agentic AI Security & Runtime Guardrails (`PS-3.2`)  
+**Repository:** [https://github.com/Siva-2517/SentinelTrace.git](https://github.com/Siva-2517/SentinelTrace.git)  
 **Core Architecture:** Classical Machine Learning (Isolation Forest + Mahalanobis Distance) + Session Suspicion Accumulator + FastAPI + React  
 
 ---
@@ -16,7 +18,7 @@
 
 Traditional security guardrails attempt to inspect prompt text or LLM output strings for malicious keywords. **This fails completely against Indirect Prompt Injection**, where the attack payload is hidden inside retrieved external data (RAG documents, tool outputs, or third-party API responses). The user's input looks safe, and the agent's text response looks polite, but in the background, **the agent was hijacked into executing unauthorized tool calls**.
 
-`SentinelTrace` implements a **runtime behavioral anomaly detector** (`PS-3.2`) that monitors *what the agent does next*, ignoring prompt text syntax entirely.
+`SentinelTrace` implements a **runtime behavioral anomaly detector**  that monitors *what the agent does next*, ignoring prompt text syntax entirely.
 
 ### 🌟 Key Technical Highlights:
 1. **12-Dimensional Feature Vector per Turn:** Quantifies tool-selection n-grams, parameter Shannon entropy, response length deltas, and execution timing.
@@ -60,17 +62,17 @@ For every agent turn, `SentinelTrace` converts raw event telemetry into a normal
 | # | Feature Name | Description / Signal |
 |---|---|---|
 | 1 | `total_tool_calls` | Number of tools executed in turn |
-| 2 | `unique_tools_used` | Diversity of tool usage |
-| 3 | `calls_web_search` | Binary/count signal for web search tool |
-| 4 | `calls_read_file` | Binary/count signal for file reading tool |
-| 5 | `calls_calendar_query` | Binary/count signal for calendar tool |
-| 6 | `calls_send_email` | Binary/count signal for email transmission tool |
-| 7 | `calls_kb_retriever` | Binary/count signal for RAG retriever tool |
-| 8 | `avg_param_length` | Mean character length of tool call parameters |
-| 9 | `avg_param_entropy` | **Shannon Entropy** of parameter strings (catches exfiltrated payloads / obfuscation) |
-| 10 | `avg_response_length` | Tool return payload size |
-| 11 | `total_tool_latency_ms` | Execution time across tools |
-| 12 | `suspicious_transition_flag` | High-risk transition n-gram (e.g. `kb_retriever` $\to$ `send_email`) |
+| 2 | `calls_kb_retriever` | Binary/count signal for RAG retriever tool |
+| 3 | `calls_send_email` | Binary/count signal for email transmission tool |
+| 4 | `calls_web_search` | Binary/count signal for web search tool |
+| 5 | `calls_read_file` | Binary/count signal for file reading tool |
+| 6 | `calls_calendar_query` | Binary/count signal for calendar tool |
+| 7 | `avg_param_length` | Mean character length of tool call parameters |
+| 8 | `avg_param_entropy` | **Shannon Entropy** of parameter strings (catches exfiltrated payloads / obfuscation) |
+| 9 | `total_response_length` | Tool return payload size |
+| 10 | `avg_step_latency_ms` | Execution time across tools |
+| 11 | `suspicious_transition_flag` | High-risk transition n-gram (e.g. `kb_retriever` $\to$ `send_email`) |
+| 12 | `sensitive_keyword_density` | Density of sensitive exfiltration target terms in tool arguments |
 
 ---
 
@@ -116,7 +118,26 @@ User Prompt (Safe) ──► Agent Invokes Tool (e.g. kb_retriever) ──► Co
 
 ## 🚀 Quickstart & Setup Guide
 
-### 1. Local Development Mode
+### 1. Repository Setup & Git Commands
+
+To clone and initialize the project from GitHub:
+
+```bash
+git clone https://github.com/Siva-2517/SentinelTrace.git
+cd SentinelTrace
+```
+
+To commit and push updates:
+
+```bash
+git add .
+git commit -m "Update SentinelTrace codebase"
+git push origin main
+```
+
+---
+
+### 2. Local Development Mode
 
 #### Backend Setup (Python 3.11+)
 ```powershell
@@ -147,7 +168,7 @@ Open **[http://localhost:3000](http://localhost:3000)** (or `http://localhost:51
 
 ---
 
-### 2. Multi-Container Docker Stack (Production Simulation)
+### 3. Multi-Container Docker Stack (Production Simulation)
 
 Run the full stack (PostgreSQL + Redis + FastAPI Backend + React Frontend) using Docker Compose:
 

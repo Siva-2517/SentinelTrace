@@ -1,0 +1,11 @@
+.env
+*.env
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.pytest_cache/
+*.db
+sentinel_trace.db
+.vscode/
+.idea/

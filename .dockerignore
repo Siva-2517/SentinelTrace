@@ -1,0 +1,39 @@
+# Git & Documentation
+.git
+.gitignore
+README.md
+docs/
+data/
+
+# Environment & Local Configuration
+.env
+*.env
+.env.local
+.env.*.local
+
+# Python / Virtual Environment
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# Database files
+*.db
+*.sqlite
+sentinel_trace.db
+
+# Node / Frontend Build
+node_modules/
+dist/
+npm-debug.log*
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
