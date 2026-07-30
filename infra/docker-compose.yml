@@ -1,64 +1,26 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: sentinel_postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-      POSTGRES_DB: sentinel_trace
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    container_name: sentinel_redis
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  backend:
+  server:
     build:
       context: ..
-      dockerfile: backend/Dockerfile
-    container_name: sentinel_backend
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@postgres:5432/sentinel_trace
-      - REDIS_URL=redis://redis:6379/0
-      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
-      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - GROQ_API_KEY=${GROQ_API_KEY:-}   
+      dockerfile: server/Dockerfile
+    container_name: sentinel_server
+    env_file:
+      - ../server/.env
     ports:
       - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    restart: always
 
-  frontend:
+  client:
     build:
       context: ..
-      dockerfile: frontend/Dockerfile
-    container_name: sentinel_frontend
+      dockerfile: client/Dockerfile
+    container_name: sentinel_client
+    env_file:
+      - ../client/.env
     ports:
       - "3000:80"
     depends_on:
-      - backend
-
-volumes:
-  postgres_data:
+      - server
+    restart: always

@@ -139,9 +139,9 @@ git push origin main
 
 ### 2. Local Development Mode
 
-#### Backend Setup (Python 3.11+)
+#### Server Setup (Python 3.11+)
 ```powershell
-cd backend
+cd server
 
 # Create & activate virtual environment
 python -m venv venv
@@ -150,13 +150,13 @@ python -m venv venv
 # Install dependencies
 pip install -r requirements.txt
 
-# Start backend server
+# Start server API
 uvicorn app.main:app --reload --port 8000
 ```
 
-#### Frontend Setup (React 18 + Vite)
+#### Client Setup (React 18 + Vite)
 ```powershell
-cd frontend
+cd client
 
 # Install dependencies
 npm install

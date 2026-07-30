@@ -31,10 +31,9 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-async def on_startup():
+def on_startup():
     logger.info("Initializing database tables...")
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    Base.metadata.create_all(bind=engine)
     logger.info("Database tables initialized successfully.")
 
 
@@ -57,6 +56,7 @@ async def readiness_check():
     """Readiness probe."""
     return {"status": "ready", "llm_provider": settings.LLM_PROVIDER}
 
-@app.get("/")
+
+@app.get("/", tags=["Health"])
 async def root():
-    return {"message": "Sentinel Trace Backend is running"} 
+    return {"message": "Sentinel Trace Backend is running"}

@@ -1,6 +1,5 @@
 from typing import Tuple, List, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 from app.models.db_models import Agent, BaselineProfile, AgentTurnEvent
 from app.agent.sample_agent import sample_agent_instance
@@ -9,11 +8,9 @@ from app.ml.baseline_profiler import BaselineProfiler
 from app.simulation.scenario_generator import generate_synthetic_scenarios
 
 
-async def build_baseline_profile(agent_id: str, scenario_count: int, db: AsyncSession) -> BaselineProfile:
+async def build_baseline_profile(agent_id: str, scenario_count: int, db: Session) -> BaselineProfile:
     """Helper service function to generate synthetic scenarios and fit baseline profile."""
-    # Verify agent exists
-    result = await db.execute(select(Agent).where(Agent.id == agent_id))
-    agent = result.scalar_one_or_none()
+    agent = db.query(Agent).filter(Agent.id == agent_id).first()
     if not agent:
         raise ValueError(f"Agent with ID {agent_id} not found")
 
@@ -43,13 +40,7 @@ async def build_baseline_profile(agent_id: str, scenario_count: int, db: AsyncSe
     profiler = BaselineProfiler()
     means, cov, iso_serialized = profiler.fit_baseline(feature_matrix)
 
-    # Check current version
-    res_b = await db.execute(
-        select(BaselineProfile)
-        .where(BaselineProfile.agent_id == agent_id)
-        .order_by(BaselineProfile.version.desc())
-    )
-    latest = res_b.scalars().first()
+    latest = db.query(BaselineProfile).filter(BaselineProfile.agent_id == agent_id).order_by(BaselineProfile.version.desc()).first()
     next_version = (latest.version + 1) if latest else 1
 
     baseline = BaselineProfile(
@@ -62,6 +53,6 @@ async def build_baseline_profile(agent_id: str, scenario_count: int, db: AsyncSe
     )
     db.add(baseline)
     agent.status = "active"
-    await db.commit()
-    await db.refresh(baseline)
+    db.commit()
+    db.refresh(baseline)
     return baseline

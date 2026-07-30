@@ -1,7 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.db_models import Agent, BaselineProfile, EvalRun
@@ -12,14 +11,9 @@ router = APIRouter(prefix="/eval", tags=["Evaluation"])
 
 
 @router.post("/run/{agent_id}", response_model=EvalRunResponse, status_code=status.HTTP_201_CREATED)
-async def run_evaluation_suite(agent_id: str, db: AsyncSession = Depends(get_db)):
+async def run_evaluation_suite(agent_id: str, db: Session = Depends(get_db)):
     """Run full evaluation harness (normal + injected scenarios) and calculate metrics."""
-    result = await db.execute(
-        select(BaselineProfile)
-        .where(BaselineProfile.agent_id == agent_id)
-        .order_by(BaselineProfile.version.desc())
-    )
-    baseline = result.scalars().first()
+    baseline = db.query(BaselineProfile).filter(BaselineProfile.agent_id == agent_id).order_by(BaselineProfile.version.desc()).first()
     if not baseline:
         raise HTTPException(status_code=400, detail="Agent has no fitted baseline. Build baseline first.")
 
@@ -39,18 +33,13 @@ async def run_evaluation_suite(agent_id: str, db: AsyncSession = Depends(get_db)
         results=metrics
     )
     db.add(eval_run)
-    await db.commit()
-    await db.refresh(eval_run)
+    db.commit()
+    db.refresh(eval_run)
     return eval_run
 
 
 @router.get("/runs/{agent_id}", response_model=List[EvalRunResponse])
-async def list_eval_runs(agent_id: str, db: AsyncSession = Depends(get_db)):
+def list_eval_runs(agent_id: str, db: Session = Depends(get_db)):
     """List historical evaluation runs for an agent."""
-    result = await db.execute(
-        select(EvalRun)
-        .where(EvalRun.agent_id == agent_id)
-        .order_by(EvalRun.created_at.desc())
-    )
-    runs = result.scalars().all()
+    runs = db.query(EvalRun).filter(EvalRun.agent_id == agent_id).order_by(EvalRun.created_at.desc()).all()
     return runs

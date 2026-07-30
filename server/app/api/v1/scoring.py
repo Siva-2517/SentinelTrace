@@ -1,7 +1,6 @@
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.db_models import Agent, BaselineProfile, AgentTurnEvent, AnomalyScore
@@ -16,17 +15,11 @@ router = APIRouter(prefix="/agents/{agent_id}", tags=["Scoring & Ingestion"])
 
 
 @router.post("/turns", response_model=ScoreResponse, status_code=status.HTTP_201_CREATED)
-async def ingest_and_score_turn(agent_id: str, turn_in: AgentTurnIngest, db: AsyncSession = Depends(get_db)):
+async def ingest_and_score_turn(agent_id: str, turn_in: AgentTurnIngest, db: Session = Depends(get_db)):
     """Ingest an agent turn event, extract features, score against baseline, and update session suspicion score."""
     # 1. Fetch latest baseline profile; auto-build if not yet created
-    res_b = await db.execute(
-        select(BaselineProfile)
-        .where(BaselineProfile.agent_id == agent_id)
-        .order_by(BaselineProfile.version.desc())
-    )
-    baseline = res_b.scalars().first()
+    baseline = db.query(BaselineProfile).filter(BaselineProfile.agent_id == agent_id).order_by(BaselineProfile.version.desc()).first()
     if not baseline:
-        # Auto-build initial baseline profile for seamless execution
         try:
             baseline = await build_baseline_profile(agent_id, 20, db)
         except Exception as e:
@@ -50,7 +43,7 @@ async def ingest_and_score_turn(agent_id: str, turn_in: AgentTurnIngest, db: Asy
         is_synthetic=turn_in.is_synthetic
     )
     db.add(turn_event)
-    await db.flush()
+    db.flush()
 
     # 3. Score turn
     score_dict = anomaly_scorer_instance.score_turn(
@@ -61,13 +54,10 @@ async def ingest_and_score_turn(agent_id: str, turn_in: AgentTurnIngest, db: Asy
     )
 
     # 4. Fetch previous turn suspicion accumulator for session
-    res_s = await db.execute(
-        select(AnomalyScore)
-        .join(AgentTurnEvent)
-        .where(AgentTurnEvent.agent_id == agent_id, AgentTurnEvent.session_id == turn_in.session_id)
-        .order_by(AgentTurnEvent.turn_number.desc())
-    )
-    prev_score = res_s.scalars().first()
+    prev_score = db.query(AnomalyScore).join(AgentTurnEvent).filter(
+        AgentTurnEvent.agent_id == agent_id, AgentTurnEvent.session_id == turn_in.session_id
+    ).order_by(AgentTurnEvent.turn_number.desc()).first()
+
     prev_accumulator = prev_score.suspicion_accumulator if prev_score else 0.0
 
     current_accumulator = suspicion_accumulator_instance.calculate_next_score(
@@ -87,8 +77,8 @@ async def ingest_and_score_turn(agent_id: str, turn_in: AgentTurnIngest, db: Asy
         feature_attribution=score_dict["feature_attribution"]
     )
     db.add(anomaly_score)
-    await db.commit()
-    await db.refresh(anomaly_score)
+    db.commit()
+    db.refresh(anomaly_score)
     return anomaly_score
 
 
@@ -98,7 +88,7 @@ async def execute_and_score_turn(
     user_input: str,
     session_id: str = "demo_session",
     turn_number: int = 1,
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Executes sample agent on user input and immediately scores the resulting turn."""
     turn_res = await sample_agent_instance.execute_turn(user_input)

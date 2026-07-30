@@ -1,7 +1,6 @@
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.db.session import get_db
@@ -11,19 +10,13 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
 @router.get("/summary")
-async def get_dashboard_summary(db: AsyncSession = Depends(get_db)):
+def get_dashboard_summary(db: Session = Depends(get_db)):
     """Get high-level aggregated metrics for the dashboard summary header."""
-    res_agents = await db.execute(select(func.count(Agent.id)))
-    total_agents = res_agents.scalar() or 0
+    total_agents = db.query(func.count(Agent.id)).scalar() or 0
+    total_turns = db.query(func.count(AgentTurnEvent.id)).scalar() or 0
+    total_flagged = db.query(func.count(AnomalyScore.id)).filter(AnomalyScore.flagged == True).scalar() or 0
 
-    res_turns = await db.execute(select(func.count(AgentTurnEvent.id)))
-    total_turns = res_turns.scalar() or 0
-
-    res_flagged = await db.execute(select(func.count(AnomalyScore.id)).where(AnomalyScore.flagged == True))
-    total_flagged = res_flagged.scalar() or 0
-
-    res_eval = await db.execute(select(EvalRun).order_by(EvalRun.created_at.desc()).limit(1))
-    latest_eval = res_eval.scalars().first()
+    latest_eval = db.query(EvalRun).order_by(EvalRun.created_at.desc()).first()
 
     precision = latest_eval.precision if latest_eval else 1.0
     recall = latest_eval.recall if latest_eval else 1.0
@@ -41,16 +34,13 @@ async def get_dashboard_summary(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/timeline/{agent_id}")
-async def get_anomaly_timeline(agent_id: str, limit: int = 50, db: AsyncSession = Depends(get_db)):
+def get_anomaly_timeline(agent_id: str, limit: int = 50, db: Session = Depends(get_db)):
     """Get timeline of scored turns for Recharts time-series chart."""
-    result = await db.execute(
-        select(AgentTurnEvent, AnomalyScore)
-        .join(AnomalyScore, AgentTurnEvent.id == AnomalyScore.turn_event_id)
-        .where(AgentTurnEvent.agent_id == agent_id)
-        .order_by(AgentTurnEvent.timestamp.asc())
-        .limit(limit)
-    )
-    rows = result.all()
+    rows = db.query(AgentTurnEvent, AnomalyScore).join(
+        AnomalyScore, AgentTurnEvent.id == AnomalyScore.turn_event_id
+    ).filter(AgentTurnEvent.agent_id == agent_id).order_by(
+        AgentTurnEvent.timestamp.asc()
+    ).limit(limit).all()
 
     timeline_data = []
     for turn, score in rows:
@@ -70,15 +60,13 @@ async def get_anomaly_timeline(agent_id: str, limit: int = 50, db: AsyncSession 
 
 
 @router.get("/attribution/{agent_id}")
-async def get_feature_attribution_summary(agent_id: str, db: AsyncSession = Depends(get_db)):
+def get_feature_attribution_summary(agent_id: str, db: Session = Depends(get_db)):
     """Get average feature attribution across flagged events for explanation breakdown."""
-    result = await db.execute(
-        select(AnomalyScore)
-        .join(AgentTurnEvent, AnomalyScore.turn_event_id == AgentTurnEvent.id)
-        .where(AgentTurnEvent.agent_id == agent_id, AnomalyScore.flagged == True)
-        .limit(20)
-    )
-    scores = result.scalars().all()
+    scores = db.query(AnomalyScore).join(
+        AgentTurnEvent, AnomalyScore.turn_event_id == AgentTurnEvent.id
+    ).filter(
+        AgentTurnEvent.agent_id == agent_id, AnomalyScore.flagged == True
+    ).limit(20).all()
 
     if not scores:
         return {"top_features": [], "message": "No flagged events yet"}

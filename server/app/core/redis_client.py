@@ -23,12 +23,17 @@ async def get_redis_client() -> Any:
         return None
     if _redis_client is None:
         try:
+            extra_args = {}
+            if settings.REDIS_URL.startswith("rediss://"):
+                extra_args["ssl_cert_reqs"] = None
+
             _redis_client = aioredis.from_url(
                 settings.REDIS_URL,
                 encoding="utf-8",
                 decode_responses=True,
-                socket_timeout=1.5,
-                socket_connect_timeout=1.5
+                socket_timeout=2.0,
+                socket_connect_timeout=1.5,
+                **extra_args
             )
             # Test ping
             await _redis_client.ping()
