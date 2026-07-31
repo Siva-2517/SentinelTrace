@@ -278,7 +278,9 @@ npm install
 npm run dev
 ```
 
-Open **[http://localhost:3000](http://localhost:3000)** in your browser. API documentation is available at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
+Open **[SentinelTrace](http://65.2.53.249/)** in your browser. 
+
+API documentation is available at **[Swagger Docs](http://65.2.53.249/docs)**.
 
 ---
 
